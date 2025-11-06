@@ -17,4 +17,4 @@ mkdir -p ${result_dir}/multiqc_report/
 
 multiqc ${result_dir}/raw ${result_dir}/trimmed -o ${result_dir}/multiqc_report/
 
-# run with /data/users/mamos/2526-unibe-rna-sequencing-project/
+# first arg /data/users/mamos/2526-unibe-rna-sequencing-project/results/quality_check/lung
