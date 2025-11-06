@@ -3,8 +3,8 @@
 #SBATCH --mail-type=end,error
 #SBATCH --mail-user=mario.amos@students.unibe.ch
 #SBATCH --output=/data/users/mamos/2526-unibe-rna-sequencing-project/results/quality_check/slurm/slurm-qc-%j.out
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=2G
 #SBATCH --nodes=1
 #SBATCH --time=1:00:00
 #SBATCH --partition=pibu_el8
