@@ -20,10 +20,10 @@ mkdir -p $output_dir
 mkdir -p ${output_dir}/raw
 mkdir -p ${output_dir}/trimmed
 
-fastqc -t 2 ${raw_file}_1.fastq.gz ${raw_file}_2.fastq.gz -o ${output_dir}/raw;
+fastqc -t ${SLURM_CPUS_PER_TASK} ${raw_file}_1.fastq.gz ${raw_file}_2.fastq.gz -o ${output_dir}/raw;
 
 basename=$(echo $raw_file | xargs -n 1 basename)
 
-fastp -i ${raw_file}_1.fastq.gz -I ${raw_file}_2.fastq.gz -o ${output_dir}/trimmed/${basename}_1_trimmed.fastq.gz -O ${output_dir}/trimmed/${basename}_2_trimmed.fastq.gz -j ${output_dir}/trimmed/${basename}_fastp.json -h ${output_dir}/trimmed/${basename}_fastp.html --thread 2 --trim_poly_g -l 50;
+fastp -i ${raw_file}_1.fastq.gz -I ${raw_file}_2.fastq.gz -o ${output_dir}/trimmed/${basename}_1_trimmed.fastq.gz -O ${output_dir}/trimmed/${basename}_2_trimmed.fastq.gz -j ${output_dir}/trimmed/${basename}_fastp.json -h ${output_dir}/trimmed/${basename}_fastp.html --thread ${SLURM_CPUS_PER_TASK} --trim_poly_g -l 50;
 
-fastqc -t 2 ${output_dir}/trimmed/${basename}_1_trimmed.fastq.gz ${output_dir}/trimmed/${basename}_2_trimmed.fastq.gz -o ${output_dir}/trimmed;
+fastqc -t ${SLURM_CPUS_PER_TASK} ${output_dir}/trimmed/${basename}_1_trimmed.fastq.gz ${output_dir}/trimmed/${basename}_2_trimmed.fastq.gz -o ${output_dir}/trimmed;
