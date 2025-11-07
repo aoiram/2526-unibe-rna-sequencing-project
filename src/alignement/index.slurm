@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=12G
 #SBATCH --nodes=1
-#SBATCH --time=3:00:00
+#SBATCH --time=03:00:00
 #SBATCH --partition=pibu_el8
 #SBATCH --job-name=rna_seq_alignement_index
 
