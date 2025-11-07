@@ -15,8 +15,7 @@ FILE_2=$2
 SAMPLE_NAME=$3
 INDEX_BASENAME=$4
 OUT_DIR=$5
-EXONS_FILE=$6
-SPLICE_SITE_FILE=$7
+SPLICE_SITE_FILE=$6
 
 CONTAINER=/containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
 
@@ -26,4 +25,4 @@ apptainer exec $CONTAINER hisat2 -p ${SLURM_CPUS_PER_TASK} \
 -S ${OUT_DIR}/sam/${SAMPLE_NAME}.sam \
 --summary-file ${OUT_DIR}/sam/${SAMPLE_NAME}_summary.txt \
 --rna-strandness RF \
---known-splicesite-infile $EXONS_FILE
+--known-splicesite-infile $SPLICE_SITE_FILE
