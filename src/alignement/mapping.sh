@@ -2,8 +2,7 @@
 
 # PATH
 FASTQ_DIR=/data/users/mamos/2526-unibe-rna-sequencing-project/data/toxoplasma_de/reads_Lung
-OUT_DIR=/data/users/mamos/2526-unibe-rna-sequencing-project/results/alignement
-REF_FILE=/data/users/mamos/data/mouse_genome/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz
+OUT_DIR=/data/users/mamos/2526-unibe-rna-sequencing-project/results/alignement/sam
 INDEX_BASENAME=/data/users/mamos/2526-unibe-rna-sequencing-project/results/alignement/index/index
 SPLICE_SITE_FILE=/data/users/mamos/2526-unibe-rna-sequencing-project/results/alignement/splice_sites.txt
 

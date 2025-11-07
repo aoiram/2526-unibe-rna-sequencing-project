@@ -22,7 +22,7 @@ CONTAINER=/containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
 apptainer exec $CONTAINER hisat2 -p ${SLURM_CPUS_PER_TASK} \
 -x ${INDEX_BASENAME} \
 -1 $FILE_1 -2 $FILE_2 \
--S ${OUT_DIR}/sam/${SAMPLE_NAME}.sam \
+-S ${OUT_DIR}/${SAMPLE_NAME}.sam \
 --summary-file ${OUT_DIR}/sam/${SAMPLE_NAME}_summary.txt \
 --rna-strandness RF \
 --known-splicesite-infile $SPLICE_SITE_FILE
