@@ -16,16 +16,17 @@ SAM_FILE=$1
 REF_FILE=$2
 OUT_FILE=$3
 UNSORTED_FILE=${OUT_FILE%.bam}.unsorted.bam
+CONTAINER=/containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
 
 #index reference for samtools (make the fai)
-samtools faidx $REF_FILE
+apptainer exec $CONTAINER samtools faidx $REF_FILE
 
 #convert sam to bam
-samtools view -b -@ ${SLURM_CPUS_PER_TASK} -t ${REF_FILE}.fai ${SAM_FILE} > ${UNSORTED_FILE}
+apptainer exec $CONTAINER samtools view -hBs -@ ${SLURM_CPUS_PER_TASK} -t ${REF_FILE}.fai ${SAM_FILE} > ${UNSORTED_FILE}
 
 #sort
-samtools sort -@ ${SLURM_CPUS_PER_TASK} -o $OUT_FILE ${UNSORTED_FILE}
+apptainer exec $CONTAINER samtools sort -@ ${SLURM_CPUS_PER_TASK} -o $OUT_FILE -m ${SLURM_MEM_PER_CPU} ${UNSORTED_FILE}
 rm ${UNSORTED_FILE}
 
 #index bam (make the bai)
-samtools index -@ ${SLURM_CPUS_PER_TASK} $OUT_FILE
+apptainer exec $CONTAINER samtools index -@ ${SLURM_CPUS_PER_TASK} $OUT_FILE
