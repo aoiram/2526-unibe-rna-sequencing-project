@@ -10,8 +10,6 @@
 #SBATCH --partition=pibu_el8
 #SBATCH --job-name=rna_seq_alignement_samtools
 
-module load SAMtools/1.13-GCC-10.3.0
-
 SAM_FILE=$1
 REF_FILE=$2
 OUT_FILE=$3
