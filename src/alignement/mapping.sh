@@ -13,5 +13,4 @@ for file_1 in `ls -1 $FASTQ_DIR/*_1.fastq.gz`; do
     file_2=${file_1%_1.fastq.gz}_2.fastq.gz
     sample_name=$(basename ${file_1%_1.fastq.gz})
     sbatch ${BASH_SOURCE[0]%/mapping.sh}/mapping.slurm $file_1 $file_2 $sample_name $INDEX_BASENAME $OUT_DIR $EXONS_FILE $SPLICE_SITE_FILE
-    break
 done
