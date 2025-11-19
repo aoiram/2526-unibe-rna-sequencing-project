@@ -20,7 +20,7 @@ CONTAINER=/containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
 apptainer exec $CONTAINER samtools faidx $REF_FILE
 
 #convert sam to bam
-apptainer exec $CONTAINER samtools view -hBs -@ ${SLURM_CPUS_PER_TASK} -t ${REF_FILE}.fai ${SAM_FILE} > ${UNSORTED_FILE}
+apptainer exec $CONTAINER samtools view -b -@ ${SLURM_CPUS_PER_TASK} -t ${REF_FILE}.fai ${SAM_FILE} > ${UNSORTED_FILE}
 
 #sort
 apptainer exec $CONTAINER samtools sort -@ ${SLURM_CPUS_PER_TASK} -o $OUT_FILE ${UNSORTED_FILE}
