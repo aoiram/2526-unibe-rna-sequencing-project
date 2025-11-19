@@ -23,7 +23,7 @@ apptainer exec $CONTAINER samtools faidx $REF_FILE
 apptainer exec $CONTAINER samtools view -hBs -@ ${SLURM_CPUS_PER_TASK} -t ${REF_FILE}.fai ${SAM_FILE} > ${UNSORTED_FILE}
 
 #sort
-apptainer exec $CONTAINER samtools sort -@ ${SLURM_CPUS_PER_TASK} -o $OUT_FILE -m ${SLURM_MEM_PER_CPU} ${UNSORTED_FILE}
+apptainer exec $CONTAINER samtools sort -@ ${SLURM_CPUS_PER_TASK} -o $OUT_FILE ${UNSORTED_FILE}
 rm ${UNSORTED_FILE}
 
 #index bam (make the bai)
