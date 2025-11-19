@@ -1,6 +1,6 @@
 # Script run order
-1. run `sbatch index.slurm`
-2. run `sbatch hisat2_process_gtf.slurm`
+1. run `sbatch hisat2_process_gtf.slurm`
+2. run `sbatch index.slurm`
 3. run `./mapping.sh`
 4. run `./samtools.sh`
 

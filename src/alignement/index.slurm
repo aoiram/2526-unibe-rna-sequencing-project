@@ -20,4 +20,4 @@ EXON_FILE=/data/users/mamos/2526-unibe-rna-sequencing-project/results/alignement
 # CONTAINERS PATH
 CONTAINER=/containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
 
-apptainer exec $CONTAINER hisat2-build $REF_FILE $INDEX_BASENAME -p ${SLURM_CPUS_PER_TASK} -ss ${SPLICE_SITE_FILE} --exon ${EXON_FILE}
+apptainer exec $CONTAINER hisat2-build $REF_FILE $INDEX_BASENAME -p ${SLURM_CPUS_PER_TASK}
