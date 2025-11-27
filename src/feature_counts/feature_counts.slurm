@@ -13,10 +13,11 @@
 GTF_FILE=/data/users/mamos/data/mouse_annotation/Mus_musculus.GRCm39.115.gtf
 CONTAINER=/containers/apptainer/subread_2.0.6.sif
 SORTED_BAM=/data/users/${USER}/2526-unibe-rna-sequencing-project/results/alignement/bam/*.bam
+OUT_DIR=/data/users/${USER}/2526-unibe-rna-sequencing-project/results/feature_counts
 
 apptainer exec $CONTAINER featureCounts -a ${GTF_FILE} \
--o counts.txt \
+-o ${OUT_DIR}/counts.${1}.txt \
 -T ${SLURM_CPUS_PER_TASK} \
--s 2 \
+-s ${1} \
 -p \
 $(ls $SORTED_BAM)
