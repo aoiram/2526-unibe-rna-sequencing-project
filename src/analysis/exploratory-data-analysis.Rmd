@@ -1,0 +1,152 @@
+---
+title: "RNASEQU - Exploratory data analysis"
+output: html_notebook
+---
+. 
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+```
+
+Tissue: Lungs
+Table describing experimental groups for each sample. Samples are either from wildtype (WT) mice or from double-knockout (DKO) mice.
+Since the reads were produced in paired-end mode, there are 2 files per sample, with read 1 and read 2 respectively.
+
+Sample = ID as it is in the fastq file name
+Case = Infected
+Control = Uninfected
+WT = Wildtype
+DKO = Double-Knockout
+
+Sample  Group
+SRR7821918      Lung_WT_Case
+SRR7821919      Lung_WT_Case
+SRR7821920      Lung_WT_Case
+SRR7821921      Lung_WT_Case
+SRR7821922      Lung_WT_Case
+SRR7821923  Lung_DKO_Case
+SRR7821924  Lung_DKO_Case
+SRR7821925  Lung_DKO_Case
+SRR7821927  Lung_DKO_Case
+SRR7821937      Lung_WT_Control
+SRR7821938      Lung_WT_Control
+SRR7821939      Lung_WT_Control
+SRR7821940  Lung_DKO_Control
+SRR7821941  Lung_DKO_Control
+SRR7821942  Lung_DKO_Control
+
+```{r}
+# https://www.biostars.org/p/468310/#468318
+
+raw_counts <- read.table("counts.2.tsv", header = TRUE, row.names = 1)
+counts <- raw_counts[ , which(!names(raw_counts) %in% c("Chr", "Start", "End", "Strand", "Length"))]
+
+
+condition <- factor(c("Lung_WT_Case", "Lung_WT_Case", "Lung_WT_Case", "Lung_WT_Case", "Lung_WT_Case", "Lung_DKO_Case", "Lung_DKO_Case", "Lung_DKO_Case", "Lung_DKO_Case", "Lung_WT_Control", "Lung_WT_Control", "Lung_WT_Control", "Lung_DKO_Control", "Lung_DKO_Control", "Lung_DKO_Control"))
+coldata <- data.frame(row.names = colnames(counts), condition)
+
+all(rownames(coldata) == colnames(counts))
+
+ds <- DESeq2::DESeqDataSetFromMatrix(as.matrix(counts), colData = coldata, design = ~ condition)
+```
+
+```{r}
+dds <- DESeq2::DESeq(ds)
+```
+
+```{r}
+vst <- DESeq2::vst(dds, blind = TRUE)
+DESeq2::plotPCA(vst)
+#DESeq2::plotPCA(DESeq2::rlog(dds, blind = TRUE))
+```
+
+```{r}
+plot_heatmap <- function(res){
+    res <- res[!is.na(res$padj), ]
+    top <- head(order(res$padj), 50)
+    pheatmap(mat[top, ], scale="row")
+}
+
+res_wt <- DESeq2::results(dds, contrast=c("condition","Lung_WT_Case","Lung_WT_Control"))
+res_dko <- DESeq2::results(dds, contrast=c("condition","Lung_DKO_Case","Lung_DKO_Control"))
+res_case <- DESeq2::results(dds, contrast=c("condition","Lung_WT_Case","Lung_DKO_Case"))
+res_control <- DESeq2::results(dds, contrast=c("condition","Lung_WT_Control","Lung_DKO_Control"))
+
+head(res_wt[order(res_wt$padj),])
+head(res_dko[order(res_dko$padj),])
+head(res_case[order(res_case$padj),])
+head(res_control[order(res_control$padj),]) 
+
+# Volcano map : -log10(padj) vs log2(fc) 
+plot(res_wt$log2FoldChange, -log(x = res_wt$padj, base = 10), labels=row.names(res_wt))
+plot(res_dko$log2FoldChange, -log(x = res_dko$padj, base = 10))
+plot(res_case$log2FoldChange, -log(x = res_case$padj, base = 10))
+plot(res_control$log2FoldChange, -log(x = res_control$padj, base = 10))
+```
+
+```{r}
+plot_vol <- function(a, display_names=TRUE, display_top_n=50) {
+  x <- a$log2FoldChange
+  y <- -log10(a$padj)
+  a$color <- "ns"
+  a$color[a$padj < 0.0001 & a$log2FoldChange > 1] <- "up"
+  a$color[a$padj < 0.0001 & a$log2FoldChange < -1] <- "down"
+
+dev.new(width = 550, height = 330, unit = "px")
+
+  plot(x, y,
+       pch = 16,
+       xlab = "log2FoldChange",
+       ylab = "-log10(padj)",
+       main = "Volcano (DKO)",     
+       col = c("ns"="grey", "up"="red", "down"="blue")[a$color])
+  
+  top <- head(order(abs(a$log2FoldChange), decreasing = TRUE), display_top_n)
+  print(rownames(a)[top])
+  
+  if (display_names) {
+   text(x[top],
+       y[top],
+       labels = rownames(a)[top],
+       pos = 3,
+       cex = 0.4) 
+  }
+}
+plot_vol(res_wt)
+```
+
+
+```{r}
+library(SummarizedExperiment)
+library(pheatmap)
+
+
+
+topGenes <- head(order(rowVars(assay(vst)), decreasing=TRUE), 100)
+mat <- assay(vst)[topGenes, ]
+mat <- mat - rowMeans(mat)
+pheatmap(mat, annotation_col = as.data.frame(coldata["condition"]),
+         main = "Top 50 variable genes")
+```
+
+```{r}
+g_count = 30
+topGenesPadj <- unique(c(head(order(res_wt$padj),g_count), 
+                         head(order(res_dko$padj),g_count), 
+                         head(order(res_case$padj),g_count),
+                         head(order(res_control$padj),g_count)))
+
+topGenes2Fold <- unique(c(head(order(abs(res_wt$log2FoldChange), decreasing = TRUE),g_count), 
+                         head(order(abs(res_dko$log2FoldChange), decreasing = TRUE),g_count), 
+                         head(order(abs(res_case$log2FoldChange), decreasing = TRUE),g_count),
+                         head(order(abs(res_control$log2FoldChange), decreasing = TRUE),g_count)))
+
+pheatmap(assay(vst)[topGenesPadj, ], annotation_col = as.data.frame(coldata["condition"]),
+         main = "Top variable genes Padj", height = 20, width = 10, filename = "top_heatmap_padj.pdf")
+
+pheatmap(assay(vst)[topGenes2Fold, ], annotation_col = as.data.frame(coldata["condition"]),
+         main = "Top variable genes 2Fold", height = 20, width = 10, filename = "top_heatmap_2fold.pdf")
+```
