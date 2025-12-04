@@ -5,10 +5,19 @@ output: html_notebook
 . 
 
 ```{r}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+# if (!require("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
 
-BiocManager::install("DESeq2")
+# BiocManager::install("DESeq2")
+# BiocManager::install("clusterProfiler")
+
+# install.packages("httr2")
+# install.packages("jsonlite")
+
+library(httr2)
+library(jsonlite)
+library(SummarizedExperiment)
+library(pheatmap)
 ```
 
 Tissue: Lungs
@@ -81,14 +90,14 @@ head(res_case[order(res_case$padj),])
 head(res_control[order(res_control$padj),]) 
 
 # Volcano map : -log10(padj) vs log2(fc) 
-plot(res_wt$log2FoldChange, -log(x = res_wt$padj, base = 10), labels=row.names(res_wt))
+plot(res_wt$log2FoldChange, -log(x = res_wt$padj, base = 10))
 plot(res_dko$log2FoldChange, -log(x = res_dko$padj, base = 10))
 plot(res_case$log2FoldChange, -log(x = res_case$padj, base = 10))
 plot(res_control$log2FoldChange, -log(x = res_control$padj, base = 10))
 ```
 
 ```{r}
-plot_vol <- function(a, display_names=TRUE, display_top_n=50) {
+plot_vol <- function(a, display_names=FALSE, display_top_n=50) {
   x <- a$log2FoldChange
   y <- -log10(a$padj)
   a$color <- "ns"
@@ -120,11 +129,6 @@ plot_vol(res_wt)
 
 
 ```{r}
-library(SummarizedExperiment)
-library(pheatmap)
-
-
-
 topGenes <- head(order(rowVars(assay(vst)), decreasing=TRUE), 100)
 mat <- assay(vst)[topGenes, ]
 mat <- mat - rowMeans(mat)
@@ -133,7 +137,7 @@ pheatmap(mat, annotation_col = as.data.frame(coldata["condition"]),
 ```
 
 ```{r}
-g_count = 30
+g_count = 20
 topGenesPadj <- unique(c(head(order(res_wt$padj),g_count), 
                          head(order(res_dko$padj),g_count), 
                          head(order(res_case$padj),g_count),
@@ -149,4 +153,51 @@ pheatmap(assay(vst)[topGenesPadj, ], annotation_col = as.data.frame(coldata["con
 
 pheatmap(assay(vst)[topGenes2Fold, ], annotation_col = as.data.frame(coldata["condition"]),
          main = "Top variable genes 2Fold", height = 20, width = 10, filename = "top_heatmap_2fold.pdf")
+```
+
+```{r}
+uniprot_search <- function(query) {
+  req <- request("https://rest.uniprot.org/uniprotkb/search") |> 
+    req_headers("Accept" = "application/json") |>
+    req_url_query( 
+      query = query,
+      fields = "protein_name,cc_function",
+      sort = "protein_name desc",
+      size = "50"
+    )
+  resp <- req_perform(req)
+  
+  if (resp_status(resp) != 200) {
+    stop(sprintf("Error %d: %s", resp_status(resp), resp_body_string(resp)))
+  }
+  
+  data <- resp_body_json(resp)
+  return(data)
+}
+```
+
+```{r}
+for (gene in rownames(assay(vst)[topGenes2Fold, ])) {
+  resp <- uniprot_search(paste(gene, " AND organism_id:10090", sep=""))
+  for (entry in resp$results) {
+    print(gene)
+    tryCatch({
+      if (!is.null(entry$proteinDescription$recommendedName$fullName$value)) {
+        print(entry$proteinDescription$recommendedName$fullName$value)
+      }
+    }, error = function(cond) {NA}, finally = {NA})
+    tryCatch({
+      if (!is.null(entry$proteinDescription$submissionNames[[1]]$fullName$value)) {
+        print(entry$proteinDescription$submissionNames[[1]]$fullName$value)
+      }
+    }, error = function(cond) {NA}, finally = {NA})
+    tryCatch({
+      if (!is.null(entry$comments[[1]]$texts[[1]]$value)) {
+        print(entry$comments[[1]]$texts[[1]]$value)
+      }
+    }, error = function(cond) {NA}, finally = {NA})
+  }
+  print("===================================")
+}
+
 ```
